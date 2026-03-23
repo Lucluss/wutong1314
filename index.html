@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>定制代码雨</title>
+    <style>
+        /* 清除默认边距，让画布撑满全屏，背景设为黑色 */
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: black;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="codeRain"></canvas>
+
+    <script>
+        // 1. 获取画布和绘图上下文
+        const canvas = document.getElementById('codeRain');
+        const ctx = canvas.getContext('2d');
+
+        // 2. 让画布尺寸等于窗口尺寸
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // 3. 定义你想飘落的文字数组 (根据你的图片提取)
+        const texts = ['吴彤', '永远', '520', '1314', '小猪咪'];
+
+        // 4. 设置字体大小和列数
+        const fontSize = 18;
+        // 计算屏幕能放下多少列
+        const columns = canvas.width / fontSize; 
+
+        // 5. 记录每一列当前的 Y 坐标 (初始都在顶部)
+        const drops = [];
+        for (let x = 0; x < columns; x++) {
+            drops[x] = 1;
+        }
+
+        // 6. 核心绘制函数
+        function draw() {
+            // 【关键点】：画一层带透明度的黑色矩形，盖在之前的画面上
+            // 这样新画的字是清晰的，之前的字会被慢慢盖住，形成“拖影”效果
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 设置文字颜色 (根据图片设置成偏粉红色)和字体
+            ctx.fillStyle = '#ffb6c1'; // 你可以换成其他颜色，如传统的绿色 '#0F0'
+            ctx.font = fontSize + 'px arial';
+
+            // 遍历每一列，绘制文字
+            for (let i = 0; i < drops.length; i++) {
+                // 随机从数组中挑选一个词
+                const text = texts[Math.floor(Math.random() * texts.length)];
+
+                // 绘制文字：fillText(文字, x坐标, y坐标)
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                // 如果文字已经掉落到屏幕底部，且带有一点随机性，则让它回到顶部
+                // (Math.random() > 0.98 是为了让列的掉落产生错落感，不会整齐划一地掉)
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.98) {
+                    drops[i] = 0;
+                }
+
+                // Y坐标往下移一格，准备下一帧的绘制
+                drops[i]++;
+            }
+        }
+
+        // 7. 使用定时器不断调用 draw 函数，形成动画
+        // 50毫秒绘制一次，数字越小下落越快
+        setInterval(draw, 50);
+
+        // 监听窗口大小变化，动态调整画布大小
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
